@@ -19,7 +19,7 @@ Below is an illustration of the classic design using AzureFirewall as a collapse
 ## An Alternate Design using Route Server + NVA
 The Classic Use Case described above has been proven to work with numerous customer implementations. However, as the number of spokes in each region grows beyond dozens to hundreds, some issues arise:
 -	Overriding UDRs for each of the prefixes to force traffic through remote firewall becomes cumbersome, even with automation 
--	When the total number of remote VNET prefixes is greater than 400, the [limit of number of UDR](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-resource-manager-virtual-networking-limits)on the NVA subnet route table has been reached  
+-	When the total number of remote VNET prefixes is greater than 400, the [limit of number of UDR](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/azure-subscription-service-limits#azure-resource-manager-virtual-networking-limits) on the NVA subnet route table has been reached  
 Now that [Azure Route Server](https://docs.microsoft.com/en-us/azure/route-server/overview) has reached General Availability, an alternative solution with simplified configuration is possible.  The main points and caveats are
 -	“Use Remote Gateway” and “Allow Gateway Transit” are disabled on the spoke-hub peering links. This prevents the spokes from learning the OnPrem prefixes, as well as the hub from learning remote-region spoke prefixes.
 -	For illustration purposes, the N-S firewall function is separated from the E-W firewall. 
@@ -74,6 +74,7 @@ tcp        0      0 localhost:domain        0.0.0.0:*               LISTEN
 tcp        0      0 0.0.0.0:ssh             0.0.0.0:*               LISTEN     
 tcp        0      0 vm1-westus2-spoke:41474 13.71.195.200:https     TIME_WAIT  
 **tcp        0    316 vm1-westus2-spoke12:ssh 10.2.33.4:41082         ESTABLISHED**
+
 tcp        0      0 vm1-westus2-spoke:56690 169.254.169.254:http    TIME_WAIT  
 tcp6       0      0 [::]:ssh                [::]:*                  LISTEN     
 udp        0      0 localhost:domain        0.0.0.0:*                          
@@ -86,3 +87,18 @@ AzureAdmin@VM1-EastUS2-Spoke12:~$ curl ifconfig.io
 137.116.63.88
 
 (137.116.63.88 is the Public IP of the CSR Untrusted Interface)
+
+## Summary
+Many customers have adopted the tried-and-true Hub-Spoke design with NVA in Hub, with ER Bow-Tie. There are scale and management considerations with such a design.  This article introduced a configuration leveraging Azure Route Server with an NVA propagating Supernet routes, which allows for simplification of the UDR configuration.  
+
+## Futures
+- E-W and N-S may be consolidated in the AzFW, but an NVA is still required to originate the Supernets.  A future iteration will show AzFW as the consolidated Firewall, with an NVA serving as the sole function for injecting “dummy routes”.
+- A future iteration of doc will use OpenSource NVA for N-S firewall, leveraging [OPNSense](https://github.com/dmauser/opnazure).
+
+## Acknowledgements
+Many Github contributions have discussed this general topic and need to be acknowledge.  This article is an iteration focused on the Cross-Region “Bow-Tie” route-leaking considerations.
+
+[How to use Azure Firewall for intra/inter-region Hub and Spoke traffic filtering in Virtual Networks](https://github.com/jwrightazure/lab/tree/master/inter-region-spoke-spoke-azfw)
+[Route Server Multi-Region Design](https://blog.cloudtrooper.net/2021/03/06/route-server-multi-region-design/)
+[Inspecting Traffic across ExpressRoute Circuits in Azure](https://github.com/jocortems/azurehybridnetworking/tree/main/Inspect-Traffic-Between-ExpressRoute-Circuits)
+[Forced Tunneling of Internet traffic through Active-Active OPNsense Firewalls using Azure Route Server (ExpressRoute)](https://github.com/dmauser/Lab/tree/master/RS-AA-OPNsense-ForceTunnel-ER)
