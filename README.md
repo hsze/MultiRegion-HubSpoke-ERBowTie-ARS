@@ -40,6 +40,7 @@ The following configuration was tested to validate the design:
 -	Azure Firewall is used for E-W Firewalling.  A Cisco CSR is used for N-S Firewalling.  AzFW is deployed in “Force Tunneled” mode, with a AzureFirewallManagementSubnet.
 -	Each Spoke Subnet is associated with a Route Table with a simple UDR for default 0/0 with Next-Hop of the private IP of its local AzFW (10.x.2.4)
 -	The CSR serves not only as N-S Firewall but is also originating a summary local Region route, e.g. 10.x.0.0/16.  This is critical so OnPrem to Spoke traffic does not blackhole at the Microsoft Edge. Below shows ExpressRoute has learned the supernets.
+
 ![Megaport](/Diagrams/3-MegaportRT.png)
 -	GatewaySubnet is associated with Route Table with UDR pointing to the AzureFirewall for each spoke prefix, and for the supernet of the remote region (for failure scenario).
 ![GatewaySubnet](/Diagrams/4-GatweaySubnet.png)
@@ -98,7 +99,7 @@ Many customers have adopted the tried-and-true Hub-Spoke design with NVA in Hub,
 ## Acknowledgements
 Many Github contributions have discussed this general topic and need to be acknowledge.  This article is an iteration focused on the Cross-Region “Bow-Tie” route-leaking considerations.
 
-[How to use Azure Firewall for intra/inter-region Hub and Spoke traffic filtering in Virtual Networks](https://github.com/jwrightazure/lab/tree/master/inter-region-spoke-spoke-azfw)
-[Route Server Multi-Region Design](https://blog.cloudtrooper.net/2021/03/06/route-server-multi-region-design/)
-[Inspecting Traffic across ExpressRoute Circuits in Azure](https://github.com/jocortems/azurehybridnetworking/tree/main/Inspect-Traffic-Between-ExpressRoute-Circuits)
-[Forced Tunneling of Internet traffic through Active-Active OPNsense Firewalls using Azure Route Server (ExpressRoute)](https://github.com/dmauser/Lab/tree/master/RS-AA-OPNsense-ForceTunnel-ER)
+1. [How to use Azure Firewall for intra/inter-region Hub and Spoke traffic filtering in Virtual Networks](https://github.com/jwrightazure/lab/tree/master/inter-region-spoke-spoke-azfw)
+2. [Route Server Multi-Region Design](https://blog.cloudtrooper.net/2021/03/06/route-server-multi-region-design/)
+3. [Inspecting Traffic across ExpressRoute Circuits in Azure](https://github.com/jocortems/azurehybridnetworking/tree/main/Inspect-Traffic-Between-ExpressRoute-Circuits)
+4. [Forced Tunneling of Internet traffic through Active-Active OPNsense Firewalls using Azure Route Server (ExpressRoute)](https://github.com/dmauser/Lab/tree/master/RS-AA-OPNsense-ForceTunnel-ER)
