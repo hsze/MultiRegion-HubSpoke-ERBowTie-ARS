@@ -49,45 +49,21 @@ The following configuration was tested to validate the design:
 -	CSR uses the Azure-assigned Static Public IP address on its Untrusted Interface to reach Internet.
 
 ## Validation
-The below shows the validation of Spoke to OnPrem, Spoke to Spoke (InterHub) and Spoke to Internet
+The below shows the validation of Spoke to Spoke (InterHub), Spoke to OnPrem, and Spoke to Internet
+### InterRegion Spoke to Spoke
+A TCP session (SSH) is successfully established between Spoke in EastUS2 to Spoke in WestUS2, hitting both the local and remote firewall
+
+![SSH](/Diagrams/6-CrossRegionSSH.png)
+
 ### Spoke to OnPrem
-AzureAdmin@VM1-EastUS2-Spoke12:~$ ping 172.16.10.1
-PING 172.16.10.1 (172.16.10.1) 56(84) bytes of data.
-64 bytes from 172.16.10.1: icmp_seq=1 ttl=252 time=69.4 ms
-64 bytes from 172.16.10.1: icmp_seq=2 ttl=252 time=68.7 ms
-64 bytes from 172.16.10.1: icmp_seq=3 ttl=252 time=68.7 ms
-64 bytes from 172.16.10.1: icmp_seq=4 ttl=252 time=68.7 ms
-^C
---- 172.16.10.1 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3005ms
-rtt min/avg/max/mdev = 68.756/68.937/69.461/0.441 ms
+EastUS2 Spoke VM is able to reach OnPrem
 
-### InterHub Spoke to Spoke
-AzureAdmin@VM1-EastUS2-Spoke12:~$ ssh 10.1.33.4
-AzureAdmin@10.1.33.4's password: 
-Welcome to Ubuntu 18.04.5 LTS (GNU/Linux 5.4.0-1055-azure x86_64)
-
-AzureAdmin@VM1-WestUS2-Spoke12:~$ netstat -a
-Active Internet connections (servers and established)
-Proto Recv-Q Send-Q Local Address           Foreign Address         State      
-tcp        0      0 0.0.0.0:25324           0.0.0.0:*               LISTEN     
-tcp        0      0 localhost:domain        0.0.0.0:*               LISTEN     
-tcp        0      0 0.0.0.0:ssh             0.0.0.0:*               LISTEN     
-tcp        0      0 vm1-westus2-spoke:41474 13.71.195.200:https     TIME_WAIT  
-**tcp        0    316 vm1-westus2-spoke12:ssh 10.2.33.4:41082         ESTABLISHED**
-
-tcp        0      0 vm1-westus2-spoke:56690 169.254.169.254:http    TIME_WAIT  
-tcp6       0      0 [::]:ssh                [::]:*                  LISTEN     
-udp        0      0 localhost:domain        0.0.0.0:*                          
-udp        0      0 vm1-westus2-spok:bootpc 0.0.0.0:*                          
-udp        0      0 localhost:25224         0.0.0.0:*                          
-raw6       0      0 [::]:ipv6-icmp          [::]:*                  7        
+![OnPrem](/Diagrams/7-OnPrem.png)   
 
 ### Spoke to Internet (via AzFW and then CSR)
-AzureAdmin@VM1-EastUS2-Spoke12:~$ curl ifconfig.io
-137.116.63.88
+EastUS2 Spoke VM is able to reach the Internet via both ICMP and via wget and curl.  The IP address presented to the Internet is the IP of the Public IP of the CSR Trusted Interface (137.116.63.88).
 
-(137.116.63.88 is the Public IP of the CSR Untrusted Interface)
+![ToInternet](/Diagrams/8-SpoketoInternet.png)   
 
 ## Summary
 Many customers have adopted the tried-and-true Hub-Spoke design with NVA in Hub, with ER Bow-Tie. There are scale and management considerations with such a design.  This article introduced a configuration leveraging Azure Route Server with an NVA propagating Supernet routes, which allows for simplification of the UDR configuration.  
